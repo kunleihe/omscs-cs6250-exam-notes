@@ -1,0 +1,44 @@
+# Lesson 3 Intradomain Routing
+
+- What is the difference between *routing* and *forwarding*?
+    - Forwarding refers to transferring a packet from an incoming link to an outgoing link within a *single router*
+    - Routing refers to how routers work together using routing protocols to determine good paths from the source to the destination node.
+- What is the link-state routing algorithm?
+    - Uses the Dijkstra’s algorithm.
+    - Link costs and network topology are known to all nodes
+    - Starts with N’ containing only the source node. Initialize all path to infinity except for the source node’s direct neighbors. Perform iterations. In each iteration, look into nodes that have not been added to N’. Select the node with the least cost from the previous iteration. Update distance for all immediate neighbors of this node using the lowest cost paths.
+- What is the computational complexity of the link state routing algorithm?
+    - O(N^2), where N is the number of nodes
+- What protocol uses the link state routing algorithm?
+    - The Open Shortest Path First (OSPF) routing protocol
+- What is the distance vector routing algorithm?
+    - It is iterative, asynchronous, and distributed (decentralized)
+    - Based on the Bellman-Ford algorithm
+    - Each router/node does not know the full network topology.
+    - Each node maintains its own distance vector with costs to reach every other node in the network. They send each other their distance vectors periodically and update accordingly if there are shorter paths found between what was already in its distance vector. The iteration goes on until there’s no new update.
+- What protocol uses the distance vector algorithm?
+    - The Routing Information Protocol (RIP)
+- When does the count-to-infinity problem occur in the distance vector algorithm?
+    - When a link cost increases by a large amount, it causes routers to exchange outdated information and repeatedly increase path costs in small increments until the network eventually converge.
+- What is the solution to the count-to-infinity problem and How does it resolve this problem?
+    - Poison reverse
+    - If a router’s path to a destination goes through a neighbor, it tells that neighbor the distance from itself to the destination is infinity. This way, the neighbor never tries to route packet back through it, preventing loops and stopping the count-to-infinity problem. The router poisons the path to its neighbor.
+    - This technique only solves problem with 2 nodes, not 3 or more nodes.
+- What is the Routing Information Protocol (RIP)?
+    - RIP uses hop count as metric (i.e., assumes link cost as 1). The metric of choosing a path can be 1) shortest distance, 2) lowest cost, 3) load-balanced path.
+    - Routing updates are exchanged between neighbors using a RIP response message, instead of distance vectors. The RIP messages are called RIP advertisements.
+    - Each router/node maintains a routing table. The table has three columns: 1) destination subnet, 2) next router, and 3) number of hops to destinations. The table has one row for each subnet in the AS.
+    - If a router does not hear from its neighbor at least once 180 seconds, that neighbor is considered broken. Routers send request and response messages using port number 520.
+    - RIP is an application-level process.
+- What is Open Shortest Path First (OSPF) routing protocol?
+    - OSPF is a protocol to find the best path between the source and destination router. It is a link-state protocol that uses flooding of link-state information and a Dijkstra least-cost path algorithm. It is an advancement of RIP. Advances include authentication of messages exchanged between routers, the option to use multiple same-cost paths, and support for hierarchy within a single routing domain.
+    - Each router shares knowledge of its neighbors with every other router in the network.
+- How does hierarchy in OSPF work?
+    - An OSPF autonomous system can be configured hierarchically into areas. Each area runs its own link-state algorithm. Within each area, one or more area border routers are responsible for routing packets outside the area. One OSPF area is configured to be the backbone area, which routes traffic between other areas. For packets routing between two different areas, packets —> an area border router —> backbone —> area border router within the destination area —> destination
+- What is Link State Advertisements (LSA)?
+    - Every router within a domain that operates on OSPF uses LSAs. LSA communicates the router’s **local** routing topology to all other local routers in the same OSPF area. The refresh rate for LSA is defaulted to be 30 min.
+- How are the OSPF messages processed in the router?
+    - The router checks if LSA is new or duplicate by referring to the link-state database. If it’s new, it updates this database and schedules an shortest path first (SPF) calculation. This process repeats with every new LSAs.
+    - When all the LSAs have been processed, the LSAs are flooded out as an LS update packet to the next router. Then, we run SPF calculation, and update the Forwarding Information Base (FIB).
+- What is Hot Potato Routing used for?
+    - Sometimes the destination of the traffic is outside the network, the traffic needs to travel through the network exits (egress points) before leaving the network. When there are equally good egress points (network exits), Hot Potato Routing is used to choose the closet egress point based on intradomain path cost.

@@ -1,0 +1,62 @@
+# Lesson 4 As Relationships and Interdomain Routing
+
+- Describe the relationships between ISPs, IXPs, and CDNs.
+    - Internet Service Providers (ISPs) have three tiers — large global scale ISPs (Tier 1), regional ISPs (Tier 2), and access ISPs (Tier 3). Tier 1 ISPs form the backbone network over which smaller networks can connect.
+    - Internet Exchange Points (IXPs) are interconnection infrastructure that provide the physical structure where multiple networks interconnect and exchange traffic locally.
+    - Content Delivery Networks (CDNs) are networks that content providers (e.g., Google, Netflix) create to have greater control over how their content is delivered to end-users while reducing the connectivity costs.
+- What is an AS?
+    - An Autonomous System (AS) is a group of routers (including the links among them) that operate under the same administrative authority. Each AS implements its own policy, makes its own traffic engineering decisions and interconnection strategies, and determines how the traffic leaves and enters its network.
+- What kind of relationship does AS have with other parties?
+    - Competition and cooperation. Tier 1 ISPs compete with each other, so do Tier 2 ISPs. Meanwhile, competing ISPs need to cooperate in providing global connectivity to their respective customer networks. IXPs and CDNs have caused the hierarchical structure to become flat.
+- What is BGP?
+    - Border Gateway Protocol (BGP) is used by the border routers of the ASes to exchange routing information with one another. BGP is based on financial incentives.
+- How does an AS determine what rules to import/export?
+    - Exporting routes: Route filters are rules that determine which routes an AS’s router should advertise to the routers of neighboring ASes  ASes are incentivized to learn from customers. They are not incentivized to learn from providers and peers.
+    - Importing routes: preference: customers > providers > peers
+- What were the original design goals of BGP? What was considered later?
+    - Scalability: manage the growth of internet, quick convergence and loop-free paths
+    - Express routing policies: allow ASes to implement policies for exporting and importing routes through filtering and route ranking. Keep ASes routing decisions confidential
+    - Allow cooperation among ASes: Each AS can make local decisions and keep these decisions confidential
+    - Security: not originally included. Was added later as the Internet grew.
+- What are the basics of BGP?
+    - BGP peers: a pair of routers
+    - BGP session: where BGP peers exchange routing information. eBGP & iBGP
+    - BGP messages: BGP peers exchange BGP messages to provide reachability information and enforce routing policies. Two types:
+        - UPDATE messages: contain information about routes that have changed. Two kinds of updates: *announcements* that advertise new routes and updating existing ones, and *withdrawals* that inform a route is no longer available.
+        - KEEPALIVE messages: exchanged between peers to keep a session going.
+    - BGP Prefix Reachability
+    - PBGP Routes: attributes:
+        - ASPATH: include each AS’s identifier, prevent loops, used to choose the route with shortest path
+        - NEXT HOP: the next-hop router’s IP address. iBGPs use it to store the IP address of the border route.
+- What is the difference between iBGP and eBGP?
+    - Both iBGP and eBGP take care of disseminating **external** **routes. eBGP is a BGP session between routers in two different ASes. iBGP is a BGP session between routers that belong to the same AS. Once a router hears about a route that is learned from eBGP, it disseminates that route to other internal routers in the same AS using iBGP.
+- What is the difference between iBGP and IGP-like protocols (RIP or OSPF)?
+    - iBGP is used to disseminate **external** routes within the AS. Interior Gateway Protocol (IGP)-based protocols focus on finding an optimized path to an **internal** destination within the network.
+- How does a router use the BGP decision process to choose which routes to import/select path?
+    - A router compares a pair of routes following a list of attributes. If for a specific attribute, the values are the same, it goes to the next attributes.
+    - LocalPref is at the top of the attribute list. Higher value is better. By using LocalPref, an AS controls where the traffic exits, so it will influence the outbound traffic.
+    - The Multi-Exit Discriminator (MED) value controls inbound traffic. Lower value is better. A neighboring AS with multiple links tag routes with MED values to indicate which route are used as entry points.
+- What are the 2 main challenges with BGP? Why?
+    - Misconfigurations and faults: result in excessively large number of updates, which result in route instability, route processor and memory overloading, outages, and route failures. One way to resolve this is limiting the routing table size and limiting the number of route changes using flap damping, which tracks the number of updates to a specific prefix over certain amount of time. If the value reaches a configurable value, it will be suppressed by the AS.
+- What is an IXP?
+    - Internet Exchange Points (IXPs) are physical infrastructures that provide the means for ASes to interconnect and directly exchange traffic with one another. The ASes that interconnect at an IXP are called participant ASes.
+- What are four reasons for IXP's increased popularity?
+    - They are interconnection hubs handling large traffic volumes, comparable to global Tier 1 ISPs.
+    - They play an important role in mitigating DDoS attacks, acting as a shield to stop the DDoS traffic attach before it hits a participant.
+    - They are real-world infrastructures with a lot of research opportunities.
+    - They are active marketplaces and technology innovation hubs, providing an expanding list of services that go beyond interconnections.
+- Which services do IXPs provide?
+    - Public peering
+    - Private peering, which does not use the public peering infrastructure
+    - Route servers and Service legal agreements, allowing participants to arrange instant peering with participant networks using a single BGP session.
+    - Mobile peering.
+    - DDoS blackholing, allowing users to alleviate the effects of DDoS attacks
+    - Free value-added services, such as Internet Routing Registry (IRR), DNS root name servers, etc.
+- How does a route server (RS) work?
+    - Route Server makes peering more manageable.
+        - It collects and shares routing information from its peers to participants of the IXP that connect to the RS.
+        - It executes its own BGP decision process  and re-advertises the resulting information to all RS’s peer routers.
+    - RS maintains multi-lateral peering sessions. They keep track of the BGP sessions they maintain with each participant through Routing Information Base (RIB).
+    - RS maintains two types of route filters:
+        - Import filers ensure each member AS only advertises routes that it should advertise
+        - Export filters are triggered by the IXP members themselves to restrict the set of other IXP member ASes that receive their routes.

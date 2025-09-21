@@ -1,0 +1,56 @@
+# Lesson 5 Router Design and Algorithms (Part 1)
+
+- What are the basic components of a router?
+    - The input/output ports, the switching fabric, and the routing processor
+- Explain the forwarding (or switching) function (data plane) of a router.
+    - The router’s action to transfer a packet from an input link interface to an output link interface, based on destination IP address
+    - Occurs at very short timescale, in nanoseconds
+    - Typically implement in hardware
+- The switching fabric moves the packets from input to output ports. What are the functionalities performed by the input and output ports?
+    - Input ports
+        - Physically terminate the incoming links to the router
+        - The data link processing decapsulate the packets
+        - The input ports perform the lookup function by consulting the forwarding table and ensuring the packet is forwarded to the proper output port through the switch fabric.
+    - Output ports
+        - Receive and queue the packets from the switch fabric and then send them over to the outgoing link
+- What is the purpose of the router’s control plane?
+    - Implement the routing protocols, maintain the routing tables, compute the forwarding table — they are all implement in software in the routing processor. These tasks happen in millisecond to second.
+- What tasks occur in a router?
+    - Lookup: routers look at the forwarding table to determine the output links using the longest prefix algorithm
+    - Switching: transfer the packet from the input link to the output link. Modern fast routers use crossbar switches
+    - Queuing: after the packet has been switched, it needs to be queued
+    - Header validation and checksum: check the packet’s version number, decrements the time-to-live (TTL) field, and recalculate the header checksum
+    - Route processing: build forwarding tables using routing protocols such as RIP, OSPF, and BGP. These protocols are implemented in the routing processors.
+    - Protocol processing: implement Simple Network Management Protocol (SNMP), TCP and UDP for remote communication with the router, Internet Control Message Protocol (ICMP) for sending error messages
+- List and briefly describe each type of switching. Which, if any, can send multiple packets across the fabric in parallel?
+    - Switching via memory
+        - When an input port receives a packet, the packet is copied to the processor’s memory. The processor then extracts the destination address and looks into the forwarding table to find the output port, and the packet is copied into the output port’s buffer.
+    - Switching via bus
+        - When an input port receives a new packet, it puts an internal header that designates the output port, and send the packet to the shared bus. Then all output ports receive the packet, but only the designated one keeps it. Upon arrival, the internal header is removed from the packet. Only one packet can cross the bus at a given time.
+    - Switching via interconnection network
+        - A crossbar switch is an interconnection network that connects N input ports to N output ports using 2N buses. Crossbar network can carry multiple packets at the same time, as long as using different input and output ports.
+- What are two fundamental problems involving routers, and what causes these problems?
+    - Bandwidth and internet population scaling: caused by an increasing number of devices connected to the Internet, increasing volume of network traffic, and new technologies that can accommodate higher volumes of traffic
+    - Services at high speed: New applications require services such as protection against delay in the presence of congestion and protection during attacks or failures. But offering these services at high speed is challenging for routers.
+- What are the bottlenecks that routers face, and why do they occur?
+    - Exact lookups, prefix lookups, packet classification, switching, fair queueing, internal bandwidth, measurement, security. Most are caused by scaling issues - the need for high speed and service guarantees
+- Convert between different prefix notations (dot-decimal, slash, and masking).
+    - Dot-decimal: convert the 16-bit prefix (e.g., 132.234) to binary bits
+    - Slash notation: A/L, where A = Address, L = Length (e.g. 132.238.0.0/16 - only the first 16 bits are relevant for prefixing)
+    - Masking: a mask denoting that only the first x bits are important (e.g., 123.234.0.0/16 is written as 123.234.0.0 with a mask of 255.255.0.0. An IPv4 address is 32 bits long, so /16 means 16 ones (2 chunks of 8) and 16 zeros (2 chunks of 8)).
+- What is CIDR, and why was it introduced?
+    - The Classless Internet Domain Routing (CIDR) was introduced to resolve the rapid exhaustion of IP addresses by decreasing the router table size. It allows IP address of arbitrary-length prefixes. It introduces the longest-matching-prefix lookup problem
+- Name 4 takeaway observations around network traffic characteristics. Explain their consequences.
+    - There are large number of concurrent flows of short duration, so caching solution won’t work efficiently
+    - Lookup speed is very important, and a large part of the computational cost for lookup is in accessing memory
+    - An unstable routing protocol may adversely impact the update time in the table
+    - Trade-off in memory usage. We can use expensive fast memory or cheaper but slower memory
+- Why do we need multibit tries?
+    - Unibit tree requires large number of memory access to perform a lookup, causing latency in high-speed links. Instead, we can use stride to implement lookups. The stride is the number of bits we check at each step.
+- What is prefix expansion, and why is it needed?
+    - By prefix expansion, we ensure the expanded prefix is a multiple of the chosen stride length. When an expanded prefix collides with an existing prefix, the expanded one gets dropped.
+    - Why needed: so we don’t miss out on any prefixes. It also gives us more speed with an increased cost of the database size.
+- Perform a prefix lookup given a list of pointers for unibit tries, fixed-length multibit ties, and variable-length multibit tries.
+- Perform a prefix expansion. How many prefix lengths do old prefixes have? What about new prefixes?
+- What are the benefits of variable-stride versus fixed-stride multibit tries?
+    - It takes up less space in prefix database, less memory access, and is more flexible.
