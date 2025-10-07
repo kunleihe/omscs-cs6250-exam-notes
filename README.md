@@ -1,6 +1,6 @@
-This repo contains answers to the study questions for OMSCS CS6250 Computer Networks exams.
+This repo contains my notes to the study questions for OMSCS CS6250 Computer Networks exams.
 
-Feel free to build on it and please give me a star if you find it useful 😁
+Please give me a star if you find it useful 😁
 
 References:
 - Course link: https://omscs.gatech.edu/cs-6250-computer-networks
