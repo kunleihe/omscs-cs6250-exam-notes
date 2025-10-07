@@ -22,12 +22,12 @@
 - When would an application layer protocol choose UDP over TCP?
     - UDP offers fewer delays and better control over sending data because with UDP we have no congestion control or similar mechanisms, and no connection management overhead.
 - Explain the TCP Three-way Handshake.
-    ![TCP Three-way handshake](images/lesson2_tcp_handshake.png)
+    - ![TCP Three-way handshake](images/lesson2_tcp_handshake.png)
     - Step 1: The TCP client sends a special segment containing no data with the `SYN = 1`. The client also generates an initial sequence number (`seq = client_isn`) and includes it in this special TCP SYN segment.
     - Step 2: Upon reciving the packet, the server allocates the required resources for the connection and sends back the "connection-granted" segment called `SYNACK` segment. `seq = server_isn` (a randomly chosen initial sequence number for the server), `ack = client_isn + 1`
     - Step 3: When the client receives the SYNACK segment, it also allocates buffer and resources for the connection and sends an acknowledge with `SYN = 0`.
 - Explain the TCP connection tear down.
-    ![TCP connection tear down](images/lesson2_tcp_teardown.png)
+    - ![TCP connection tear down](images/lesson2_tcp_teardown.png)
     - Step 1: When the client wants to end the connection, it sends a segment with `FIN = 0` to the server.
     - Step 2: The server acknowledges that it receives the connection closing request and is working on it.
     - Step 3: The server then ends a segment with `FIN = 1`, indicating the connection is closed.
@@ -42,7 +42,7 @@
         - If the sender receives the `ACK` within a specific timeout period, it knows the packet was received and proceeds to send the next packet.
         - If the sender does not receive the `ACK` before the timeout expires, it assumes the packet was lost and retransmits the original packet.
 - What is Go-back-N?
-    ![Go-bacn-N](images/lesson2_go_back_n.png)
+    - ![Go-bacn-N](images/lesson2_go_back_n.png)
     - Go-back-N allows the sender to transmit multiple segments without waiting for an ACK for each one. It works as follows:
         - The sender cen send up to N unacknowledged segments, where N is the window size.
         - The receiver only sends an `ACK` for the most recently received, in-order packet. If a segment is received out of order (for example, segment 8 arrives before segment 7), the receiver will discard the out-of-order segment (8) and continue to send an ACK for the last correctly received in-order segment (6). 
@@ -54,7 +54,7 @@
         - The sender only retransmits the specific segment that were not acknowledged or are suspected to be missing.
         - The buffered, out-of-order packets are delivered to the application layer only once the missing segment has been successfully received, allowing the entire batch to be processed in order.
 - What is fast retransmit?
-    ![Fast retransmit](images/lesson2_fast_retrainsmit.png)
+    - ![Fast retransmit](images/lesson2_fast_retrainsmit.png)
     - Fast retransmit is a mechanism to detect and recover from a lost segment without having to wait for a timeout. By this, the sender can quickly retransmit the missing data. It works as follows:
         - A duplicate ACK is an acknowledgement from the receiver for a segment that the sender has already received an ACK for.
         - When the sender receives three duplicate ACKs for a particular segment, it considers that segment to be lost and immediately retransmits it.
@@ -98,4 +98,4 @@
     - CUBIC bases its growth on the **time elapsed since the last congestion event**. This means treats slow (high RTT) and fast (low RTT) connections more equally, addressing the unfairness issue found in order TCP versions.
 - Explain TCP throughput calculation.
     - Bandwidth (BW) = data per cycle / time per cycle. 
-    ![TCP throughput formula](images/lesson2_throughput.png), where MSS refer to maximum segement size, RTT refers to round trip time, p refers to probability loss.
+    - ![TCP throughput formula](images/lesson2_throughput.png), where MSS refer to maximum segement size, RTT refers to round trip time, p refers to probability loss.
