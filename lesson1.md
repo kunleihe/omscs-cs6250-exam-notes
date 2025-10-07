@@ -17,6 +17,7 @@
 - What are sockets?
     - The interface between the application layer and the transport layer
 - Describe each layer of the OSI model.
+    ![OSI Model](images/lession1_osi_model.png)
     - Application Layer
         - Protocols: HTTP, SMTP, FTP, DNS
         - Packets of information are referred to as a **messages**.

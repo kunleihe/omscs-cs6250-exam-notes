@@ -11,6 +11,7 @@
     - **Caching:** Cache results so that future searches can run faster. But it has two problems: 1) although the cache-hit rate can be high, we still need to perform search for missed hits, 2) a slow linear search of the rule space will perform poorly
     - **Passing labels:** The Multiprotocol Label Switching (MPLS) and DiffServ use this technology. How MPLS works: a label-switched path is set up between site A and B. Before traffic leaves site A, a router does packet classification and maps the web traffic to an MPLS header. Then, the intermediate routers between A and B simply apply the label without having to redo packet classification.
 - How does fast searching using set-pruning tries work?
+    ![Set-Pruning Trie](images/lesson6_trie.PNG)
     - For every destination prefix D, we *prune* the set of rules to those compatible with D.
     - Process
         - Match destination: We first match the destination IP in the destination rule trie and select the longest prefix matching, which leads us to a specific leaf node.
