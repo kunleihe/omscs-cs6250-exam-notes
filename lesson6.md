@@ -1,0 +1,65 @@
+# Lesson 6 Router Design and Algorithm (Part 2)
+
+- Why is packet classification needed?
+    - As the internet grows, packet forwarding based on the longest prefix matching of destination IP address is not enough. We need to handle packets based on **multiple criteria.** We call this finer packet handling packet classification.
+- What are three established variants of packet classification?
+    - **Firewalls:** routers implement firewalls at the entry and exit points of the network to filter out unwanted traffic
+    - **Resource reservation protocols:** DiffServ has been used to reserve bandwidth between a source and a destination
+    - **Routing based on traffic type:** avoids delays for time-sensitive applications
+- What are the simple solutions to the packet classification problem?
+    - **Linear search:** Firewall implementations perform a linear search of the rule database and keep track of the best-match rule. But time to search through a large database can be prohibitive.
+    - **Caching:** Cache results so that future searches can run faster. But it has two problems: 1) although the cache-hit rate can be high, we still need to perform search for missed hits, 2) a slow linear search of the rule space will perform poorly
+    - **Passing labels:** The Multiprotocol Label Switching (MPLS) and DiffServ use this technology. How MPLS works: a label-switched path is set up between site A and B. Before traffic leaves site A, a router does packet classification and maps the web traffic to an MPLS header. Then, the intermediate routers between A and B simply apply the label without having to redo packet classification.
+- How does fast searching using set-pruning tries work?
+    - For every destination prefix D, we *prune* the set of rules to those compatible with D.
+    - Process
+        - Match destination: We first match the destination IP in the destination rule trie and select the longest prefix matching, which leads us to a specific leaf node.
+        - Match source: Each leaf node in the destination trie hangs a separate source trie. We include *all* the corresponding source prefixes to build that trie. The packet’s source IP address is then searched within this particular source trie, and we select the longest prefix match.
+        - The algo keeps track of the lowest-cost matching rule. Finally, the algo concludes with the least-cost rule.
+- What’s the main problem with the set pruning tries?
+    - The fact that we need to include all the corresponding source prefixes can cause memory explosion, because a source prefix can occur in multiple destination trie.
+- What is the difference between the pruning approach and the backtracking approach for packet classification with a trie?
+    - Set pruning approach has a high cost in memory to reduce time, while backtracking approach pays in time to reduce memory.
+    - Backtracking approach: each rule is only stored in the source trie corresponding to its *exact* destination prefix. We traverse the destination trie with the destination IP address, then work its way back up from the LPM node through all its ancestors, searching the associated source trie at each level to find the LPM for the source IP address.
+- What’s the benefit of a grid of tries approach?
+    - Reduce the wasted time in the backtracking search by using precomputation. When there is a failure point in a source trie, we **precompute a switch pointer**, which takes us directly to the next possible source trie containing a matching rule.
+- Describe the “Take the Ticket” algorithm.
+    - Each output line maintains a distributed queue for all input lines that want to send packets to it. When an input line intends to send a packet to a specific output line, it requests a ticket. Then, the input line waits for the tickets to be served. When it’s served, the input line connects to the output line, the crosspoint is turned on, and the input line sends the packet.
+- What is the head-of-line problem?
+    - Head-of-line (HOL) blocking: when one input line sends it packet, the entire queue for other lines is waiting, even if they target different output lines.
+- How is the head-of-line problem avoided using the knockout scheme?
+    - The goal is to ensure all N incoming packets can reach the designated output in the same time slot. This requires the central switch fabric to run N times faster than the input lines. The Knockout scheme breaks all the incoming data into small, fixed-size units called cells.
+    - In practice, it’s rare for all N inputs to target the same outputs. So, the switch expects only a smaller number k to be sent to the same output simultaneously. Then the fabric running k times as fast as an inout link.
+    - The knockout scheme acts as a rapid selector or concentrator to handle the competition for an output port.
+- How is the head-of-line problem avoided using parallel iterative matching?
+    - Request phase: all inputs send requests *in parallel* to all outputs they want to connect with.
+    - Grant phase: the outputs that receive multiple requests pick a *random* input
+    - Accept phase: inputs that receive multiple grants *randomly* pick an output to send to.
+    - In the subsequent rounds, the algorithm repeats by having each input send to n-1 outputs.
+- Describe FIFO with tail drop.
+    - Packets enter a router on input links. They are then looked up using the address lookup component which gives the router the output link number The switching system within the router then places the packet in the corresponding output port. First-in, first-out. If the output link buffer is completely full, incoming packets to the tail of the queue are dropped. Fast scheduling decision, but potential loss
+- What are the reasons for making scheduling decisions more complex than FIFO?
+    - Router support for congestion
+    - Providing Quality of Service (QoS) guarantees to flows
+    - Fair sharing of links among competing flows
+- Describe Bit-by-bit Round Robin (BBRR) scheduling.
+    - Imagine an idea system where we can spit up packets and send one bit form each flow in a perfect round. This system calculates an ideal finish time for every packet.
+    - Since we can’t chop up a packet in real life, BBRR is never implemented. It is used as a reference for real-world scheduler called **Packet-level Fair Queueing (PFQ)**. For every incoming packet, the scheduler uses the BBRR formula to calculate when it should finish in the ideal system, the finish time is a round number. At any given moment, the PFQ scheduler simply sends the entire packet that has the *smallest* calculated finish round number.
+- Bit-by-bit Round Robin provides fairness; what’s the problem with this method?
+    - Because we need to keep track of the finishing time at which the head packet of each queue would depart and choose the earliest one, it requires a *priority queue* implementation, which has a time complexity that is *logarithmic* in the number of flows. Also, if a new queue becomes active, all timestamp may have to change, which has a linear time complexity. Overall, the **time complexity** of this method makes it hard to implement at gigabit speeds.
+- Describe Deficit Round Robin (DRR).
+    - We assign a quantum size, Qi, and a deficit counter, Di, for each flow. Quantum size is the bandwidth allowance. It determines the share of bandwidth allocated to that flow. Deficit Counter is like the unspent credit. It tracks any bytes a flow *earned but couldn’t use* in its previous turn.
+    - For each turn of round-robin, the algorithm will serve packets in the flow with size ≤ Qi + Di. If packets remain in the queue, it will store the remaining bandwidth Di for the next run. If all packets in the queue are served, Di will be reset to zero for the next turn.
+    - It has a constant time complexity.
+- What is a token bucket shaping?
+    - The tokens are data allowance, representing the permission to send a single bit of data. The bucket is the counter/storage that holds the tokens. The refill rate is the constant rate that tokens are put into the bucket.
+    - Rate limiting: The bucket constantly fills with tokens at rate R, which ensures that over time the average rate of the data flow cannot exceed R. If the bucket is full, any new tokens are dropped.
+    - Burst limiting: The maximum capacity of the bucket B, limits the largest burst of data the flow can send at any time. If the bucket is full, the flow has B tokens available, meaning it can immediately send a burst of up to B bits of data. Once those tokens are used, the flow must wait for the bucket to refill.
+    - The check: when a packet arrives, the flow checks the bucket. If enough tokens are available (tokens ≥ packet size), the tokens are consumed, and the packet is sent immediately. If not enough tokens are available, the packet is queued and must **wait** until the bucket refills with enough tokens. The waiting mechanism is called **shaping**.
+- In traffic scheduling, what is the difference between policing and shaping?
+    - Policing: when the traffic rate reaches the maximum configured rate, excess traffic is **dropped**, or the packet’s setting or “marking” is changed. The output rate appears as a **saw-toothed** wave.
+    - Shaping: A shaper retains excess packets in a queue or a buffer, and this excess is scheduled for later transmission. The result is that the excess traffic is **delayed** instead of dropped. Thus, the flow is shaped or **smoothed** when the data rate is higher than the configured rate. Traffic shaping and policing can work in tandem.
+- How is a leaky bucket used for traffic policing and shaping?
+    - The bucket represents a buffer that holds packets, and the water represents to the incoming packets. The leak rate is the rate at which the packets are allowed to enter the network, which is constant irrespective of the rate at which packets arrive. This leads to uniform distribution of packets sent to the network.
+    - If an arriving packet does not cause an overflow when added to the bucket, it is conforming. Otherwise, it is non-conforming. Conforming packets will be added to the bucket, while non-conforming packets are discarded.
+    - This algorithm can be implemented as a single server queue.
