@@ -1,5 +1,5 @@
 - What does the transport layer provide?
-    - The transport layer provides an end-to-end connection between two applications running on different hosts. The transport layer on the sending host receives a message from the application layer and appends its own header, called a segment. This segement is then sent to the network layer which will append (encapsulate) this segment with its header information.
+    - The transport layer provides an **end-to-end connection** between two applications running on different hosts. The transport layer on the sending host receives a message from the application layer and appends its own header, called a segment. This segment is then sent to the network layer which will append (encapsulate) this segment with its header information.
 - What is a packet for the transport layer called?
     - Segment
 - What are the two main protocols within the transport layer?
@@ -11,16 +11,15 @@
 - Describe the two types of multiplexing/demultiplexing.
     - Connectionless (UDP)
         - Socket identifier: A UDP socket is identified by a two-tuple: destination IP address and destination port number
-        - Demultiplexing: the receiving host examines only the **destination port number** in the incoming UDP segment. All segments arriving at a specific destination port are forwarded to the same associated socket, regardless of their source IP address or source port number.
         - Ananloy: it's like a post office (the destination port). Anyone can send mail to that box and the post office only looks at the box number to deliver the mail.
     - Connection-oriented (TCP)
         - Socket identifier: A TCP socket is identified by a unique four-tuple: source IP address, source port number, destination IP address, and destination port numbers.
-        - Demultiplexing: The receiving host must examine all four fields to determine the correct socket.
         - Analogy: it's like a dedicated, private phone line established for a specific conversation. Even if two other people call the same number (destination port), the switchboard (demultiplexer) knows exactly which specific conversation/socket each incoming message belong to based on who is calling (source IP and port).
 - What are the differences between UDP and TCP?
     - UDP uses connectionless multiplexing/demultiplexing, whereas TCP uses connection-oriented multiplexing/demultiplexing.
 - When would an application layer protocol choose UDP over TCP?
-    - UDP offers fewer delays and better control over sending data because with UDP we have no congestion control or similar mechanisms, and no connection management overhead.
+    - UDP offers fewer delays and better control over sending data because with UDP we have **no congestion control** or similar mechanisms, and no connection management overhead.
+    - Application: Network management, routing protocol, name translation, remote file server
 - Explain the TCP Three-way Handshake.
     - ![TCP Three-way handshake](images/lesson2_tcp_handshake.png)
     - Step 1: The TCP client sends a special segment containing no data with the `SYN = 1`. The client also generates an initial sequence number (`seq = client_isn`) and includes it in this special TCP SYN segment.
@@ -33,7 +32,7 @@
     - Step 3: The server then ends a segment with `FIN = 1`, indicating the connection is closed.
     - Step 4: The client sends an `ACK` for it to the server. It also waits for sometime to resend this acknowledge in case the first ACK is lost.
 - What is Automatic Repeat Request or ARQ?
-    - Goal: To ensure reliable communication, the sender needs to know which segments are received and which are lost.
+    - Goal: To ensure **reliable** communication, the sender needs to know which segments are received and which are lost.
     - How: Having the receiver send acknowledgements indicating that it has successfully received the specific segment. If not in a given period of time, the sender can assume the packet is lost and resend it.
 - What is Stop and Wait ARQ?
     - Stop and Wait ARQ is the simplest method to implement reliable transmission but has low performance because of the watiing time. It works as follows:
@@ -55,9 +54,10 @@
         - The buffered, out-of-order packets are delivered to the application layer only once the missing segment has been successfully received, allowing the entire batch to be processed in order.
 - What is fast retransmit?
     - ![Fast retransmit](images/lesson2_fast_retrainsmit.png)
-    - Fast retransmit is a mechanism to detect and recover from a lost segment without having to wait for a timeout. By this, the sender can quickly retransmit the missing data. It works as follows:
+    - Fast retransmit is a mechanism to detect and recover from a lost segment **without having to wait for a timeout**. By this, the sender can quickly retransmit the missing data. It works as follows:
         - A duplicate ACK is an acknowledgement from the receiver for a segment that the sender has already received an ACK for.
         - When the sender receives three duplicate ACKs for a particular segment, it considers that segment to be lost and immediately retransmits it.
+        - Notes: An `ACK` for number N means receiving packets up to N-1 and now expecting to see packet N
 - What is transmission control, and why do we need to control it?
     - Transmission control is the function of managing the speed and volume of data flow from a sending host to a receiving host.
     - We need it to prevent overwhelming the receiver and congesting the network.
