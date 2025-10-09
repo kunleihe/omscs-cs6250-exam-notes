@@ -13,7 +13,7 @@
 - What is BGP?
     - Border Gateway Protocol (BGP) is used by the border routers of the ASes to exchange routing information with one another. BGP is based on financial incentives.
 - How does an AS determine what rules to import/export?
-    - Exporting routes: Route filters are rules that determine which routes an AS’s router should advertise to the routers of neighboring ASes  ASes are **incentivized to learn from customers**. They are not incentivized to learn from providers and peers.
+    - Exporting routes: Route filters are rules that determine which routes an AS’s router should advertise to the routers of neighboring ASes. ASes are **incentivized to learn from customers**. They are not incentivized to learn from providers and peers.
     - Importing routes: preference: customers > providers > peers
 - What were the original design goals of BGP? What was considered later?
     - Scalability: manage the growth of internet, quick convergence and loop-free paths
