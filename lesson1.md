@@ -7,7 +7,7 @@
         - One layer may **duplicate** lower layer functionalities. For example, the functionality of error recovery can occur in lower layers but also in upper layers
         - Some additional **overhead** caused by the abstraction between layers
 - What are the differences and similarities between the OSI model and the five-layered Internet model?
-    - ![OSI Model](images/lession1_osi_model.png)
+    - ![OSI Model](images/lesson1_osi_model.png)
     - Similarities: both the OSI model and the five-layered Internet model has the following layers:
         - Application Layer
         - Transport Layer
