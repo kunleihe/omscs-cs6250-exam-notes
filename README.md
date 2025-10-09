@@ -1,4 +1,4 @@
-This repo contains my notes to the study questions for OMSCS CS6250 Computer Networks exams. I tried to make the notes less abstract and more understandable.
+This repo contains my notes for the study questions for OMSCS CS6250 Computer Networks exams. I tried to make the notes less abstract and more understandable.
 
 Please give me a star if you find it useful 😁
 
