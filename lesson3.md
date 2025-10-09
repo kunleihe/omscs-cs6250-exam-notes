@@ -1,38 +1,42 @@
 # Lesson 3 Intradomain Routing
 
 - What is the difference between *routing* and *forwarding*?
-    - Forwarding refers to transferring a packet from an incoming link to an outgoing link within a *single router*
-    - Routing refers to how routers work together using routing protocols to determine good paths from the source to the destination node.
-- What is the link-state routing algorithm?
+    - Forwarding refers to transferring a packet from an incoming link to an outgoing link **within a single router**
+    - Routing refers to how **routers work together** using routing protocols to determine good paths from the source to the destination node.
+- What is the main idea behind the link-state routing algorithm?
     - The goal is to find the least-cost path from the source node to all other nodes in the network. 
     - Uses the Dijkstra’s algorithm. 
     - Link costs and network topology **are known to all nodes**. 
-    - It works as follows:
-        - First, the algorithm sets up the initial costs from the source node (`u`). The cost to its directly attached neighbors is the known cost of those links. The cost to every other node in the network is set to infinity, since a path isn't known yet.
-        - Repeats a loop until all nodes have been added to the confirmed set N'. In each round of the loop:
-            - It looks at all the nodes not yet in `N'` and finds the one with the lowest current path cost from the source. Let's call this node `w`.
-            - It adds `w` to the confirmed set `N'`. This locks in its path as the shortest possible.
-            - For every neighbor of the newly added node `w` (let's call a neighbor `v`), it performs an update. It compares the current recorded cost to `v` (which is `D(v)`) with a new potential path that goes through `w`. This new path's cost is the cost to get to `w` plus the cost from `w` to `v`.
-            - If the path through `w` is cheaper, the algorithm updates `D(v)` with this new, lower cost.
-- What is the computational complexity of the link state routing algorithm?
-    - O(N^2), where N is the number of nodes
-- What protocol uses the link state routing algorithm?
+- What is an example of link state routing algorithm?
     - The Open Shortest Path First (OSPF) routing protocol
-- What is the distance vector routing algorithm?
+- Walk through an example of the link-state routing algorithm
+    - First, the algorithm sets up the initial costs from the source node (`u`). The cost to its directly attached neighbors is the known cost of those links. The cost to every other node in the network is set to infinity, since a path isn't known yet.
+    - Repeats a loop until all nodes have been added to the confirmed set N'. In each round of the loop:
+    - It looks at all the nodes not yet in `N'` and finds the one with the lowest current path cost from the source. Let's call this node `w`.
+    - It adds `w` to the confirmed set `N'`. This locks in its path as the shortest possible.
+    - For every neighbor of the newly added node `w` (let's call a neighbor `v`), it performs an update. It compares the current recorded cost to `v` (which is `D(v)`) with a new potential path that goes through `w`. This new path's cost is the cost to get to `w` plus the cost from `w` to `v`.
+    - If the path through `w` is cheaper, the algorithm updates `D(v)` with this new, lower cost.
+- What is the computational complexity of the link-state routing algorithm?
+    - O(N^2), where N is the number of nodes
+- What is the main idea behind distance vector routing algorithm?
     - It is iterative, asynchronous, and distributed (decentralized). 
     - Based on the Bellman-Ford algorithm
     - Each router/node does not know the full network topology.
     - Each node maintains its own distance vector with costs to reach every other node in the network. They send each other their distance vectors periodically and update accordingly if there are shorter paths found between what was already in its distance vector. The iteration goes on until there’s no new update.
-- What protocol uses the distance vector algorithm?
-    - The Routing Information Protocol (RIP)
+- Walk through an example of the distance vector algorithm.
+    - Each node in the network maintains its own distance vector. This is simply a list of the current best-known costs to reach every other destination node in the network.
+    - When a node `x` receives a distance vector from a neighbor `v`, it uses that information to update its own vector. For each possible destination `y`, node `x` performs the following calculation based on the Bellman-Ford equation:
+        - It calculates the potential cost of reaching destination `y` through neighbor `v`. This is done by adding the direct cost to reach neighbor `v` to the neighbor `v`'s advertised cost to reach `y`.
+        - Node `x` performs this calculation for each of its neighbors.
+        - It then compares all the calculated costs and selects the minimum one. This minimum value becomes the new least cost for node `x` to reach destination `y`.
+    - This cycle of sharing and updating continues until no nodes have new updates to send, at which point the network has converged on the best paths
 - When does the count-to-infinity problem occur in the distance vector algorithm?
     - When a link cost increases by a large amount, it causes routers to exchange outdated information and repeatedly increase path costs in small increments until the network eventually converge.
-- What is the solution to the count-to-infinity problem and How does it resolve this problem?
-    - Poison reverse
+- How does poison reverse solve the count-to-infinity problem?
     - If a router’s path to a destination goes through a neighbor, it tells that neighbor the distance from itself to the destination is infinity. This way, the neighbor never tries to route packet back through it, preventing loops and stopping the count-to-infinity problem. The router poisons the path to its neighbor.
     - This technique only solves problem with 2 nodes, not 3 or more nodes.
 - What is the Routing Information Protocol (RIP)?
-    - RIP is a protocol based on the Distance Vector algorithm.
+    - RIP is a protocol based on the **Distance Vector** algorithm.
     - RIP is an application-level process.
     - It's primary metric for measuring the cost of a path is **hop count**, meaning it defines the best path as the one that pass through fewer routers.
     - It works as follows:
@@ -44,19 +48,16 @@
     - It is a link-state protocol that uses flooding of link-state information and a Dijkstra least-cost path algorithm. 
     - It is an advancement of RIP. Advances include authentication of messages exchanged between routers, the option to use multiple same-cost paths, and support for hierarchy within a single routing domain.
     - Each router shares knowledge of its neighbors with every other router in the network.
-- How does hierarchy in OSPF work?
-    - Hierarchy in OSPF works by organizing a large autonomous system (AS) into smaller, more manageable **areas**. This structure simplifies routing and contains network traffic.
-    - Key components:
+    - An OSPF autonomous system can be configured **hierarchically into areas**:
         - Areas: a group of routers running its own independent link-state routing algorithm.
         - Backbone Area: exactly one area within the system is designated as the backbone. It acts as a central hub, routing traffic between all the other routes.
         - Area Border Routers: routers that connect an area to the backbone. The backbone area contains all the area border routers in the system.
     - How traffic moves between areas: area border router in the source area --> backbone area --> area border router in the destination area --> final destination within that area
-- What is Link State Advertisements (LSA)?
-    - The main purpose of LSA is for a router to describe its immediate **local** surroundings, telling other routers which neigbhors it's connected to.
-    - Each router in the network collects these LSAs from all the other routers and use this information to build a complete map of the network's topology, which is stored in a **link state database**. 
-    - When a rounter's connection change, it sends out a new LSA to inform everyone of the update.
-    - LSAs are also sent periodically, by default 30 min, even if no changes.
-- How are the OSPF messages processed in the router?
+    - Link State Advertisements: The main purpose of LSA is for a router to describe its immediate **local** surroundings, telling other routers which neigbhors it's connected to. It works as follows:
+        - Each router in the network collects these LSAs from all the other routers and use this information to build a complete map of the network's topology, which is stored in a **link state database**. 
+        - When a rounter's connection change, it sends out a new LSA to inform everyone of the update.
+        - LSAs are also sent periodically, by default 30 min, even if no changes.
+- How does a router process advertisements?
     - The process begins when the route processor receives an LS update packet containing LSAs from a neigbhoring router.
     - For each LSA received, the router checks its link-state database to see if it's new or duplicate. If it’s new, it updates this database and schedules an shortest path first (SPF) calculation, and determines which of its other neighbors it needs to forward this new information to. This process repeats with every new LSAs.
     - When all the LSAs have been processed, the router bundles the new LSAs into its own LS update packet and **floods** it to its other neighbors. 
