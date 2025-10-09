@@ -43,10 +43,11 @@
 - What is Go-back-N?
     - ![Go-bacn-N](images/lesson2_go_back_n.png)
     - Go-back-N allows the sender to transmit multiple segments without waiting for an ACK for each one. It works as follows:
-        - The sender cen send up to N unacknowledged segments, where N is the window size.
+        - The sender can send up to N unacknowledged segments, where N is the window size.
         - The receiver only sends an `ACK` for the most recently received, in-order packet. If a segment is received out of order (for example, segment 8 arrives before segment 7), the receiver will discard the out-of-order segment (8) and continue to send an ACK for the last correctly received in-order segment (6). 
         - If the sender either times out or receives a duplicated ACK, it assumes the packet and all susequent segments were lost.
         - The sender then retransmits all packaets starting from the missing one.
+        - *Note*: In Go-back-N, `ACK` tells the sender the last thing it received correctly
 - What is selective ACKing?
     - Selective ACKing is a mechanism used to improve efficiency by having the sender retransmit **only the sgements that are suspected to be lost** instead of all the subsequent segments (as in the case of Go-back-N). It reduces unncessary transmission. It works as follows:
         - The receiver acknowledges a correctly received segment even if it arrives out of order. The out-of-order segments are **buffered** by the receiver.
@@ -57,7 +58,7 @@
     - Fast retransmit is a mechanism to detect and recover from a lost segment **without having to wait for a timeout**. By this, the sender can quickly retransmit the missing data. It works as follows:
         - A duplicate ACK is an acknowledgement from the receiver for a segment that the sender has already received an ACK for.
         - When the sender receives three duplicate ACKs for a particular segment, it considers that segment to be lost and immediately retransmits it.
-        - Notes: An `ACK` for number N means receiving packets up to N-1 and now expecting to see packet N
+        - *Notes*: In fast retransmit, `ACK` tells the sender what it want *next*. An `ACK` for number N means receiving packets up to N-1 and now expecting to see packet N
 - What is transmission control, and why do we need to control it?
     - Transmission control is the function of managing the speed and volume of data flow from a sending host to a receiving host.
     - We need it to prevent overwhelming the receiver and congesting the network.

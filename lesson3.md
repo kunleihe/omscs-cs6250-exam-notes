@@ -4,15 +4,22 @@
     - Forwarding refers to transferring a packet from an incoming link to an outgoing link within a *single router*
     - Routing refers to how routers work together using routing protocols to determine good paths from the source to the destination node.
 - What is the link-state routing algorithm?
-    - Uses the Dijkstra’s algorithm.
-    - Link costs and network topology are known to all nodes
-    - Starts with N’ containing only the source node. Initialize all path to infinity except for the source node’s direct neighbors. Perform iterations. In each iteration, look into nodes that have not been added to N’. Select the node with the least cost from the previous iteration. Update distance for all immediate neighbors of this node using the lowest cost paths.
+    - The goal is to find the least-cost path from the source node to all other nodes in the network. 
+    - Uses the Dijkstra’s algorithm. 
+    - Link costs and network topology **are known to all nodes**. 
+    - It works as follows:
+        - First, the algorithm sets up the initial costs from the source node (`u`). The cost to its directly attached neighbors is the known cost of those links. The cost to every other node in the network is set to infinity, since a path isn't known yet.
+        - Repeats a loop until all nodes have been added to the confirmed set N'. In each round of the loop:
+            - It looks at all the nodes not yet in `N'` and finds the one with the lowest current path cost from the source. Let's call this node `w`.
+            - It adds `w` to the confirmed set `N'`. This locks in its path as the shortest possible.
+            - For every neighbor of the newly added node `w` (let's call a neighbor `v`), it performs an update. It compares the current recorded cost to `v` (which is `D(v)`) with a new potential path that goes through `w`. This new path's cost is the cost to get to `w` plus the cost from `w` to `v`.
+            - If the path through `w` is cheaper, the algorithm updates `D(v)` with this new, lower cost.
 - What is the computational complexity of the link state routing algorithm?
     - O(N^2), where N is the number of nodes
 - What protocol uses the link state routing algorithm?
     - The Open Shortest Path First (OSPF) routing protocol
 - What is the distance vector routing algorithm?
-    - It is iterative, asynchronous, and distributed (decentralized)
+    - It is iterative, asynchronous, and distributed (decentralized). 
     - Based on the Bellman-Ford algorithm
     - Each router/node does not know the full network topology.
     - Each node maintains its own distance vector with costs to reach every other node in the network. They send each other their distance vectors periodically and update accordingly if there are shorter paths found between what was already in its distance vector. The iteration goes on until there’s no new update.
@@ -25,20 +32,34 @@
     - If a router’s path to a destination goes through a neighbor, it tells that neighbor the distance from itself to the destination is infinity. This way, the neighbor never tries to route packet back through it, preventing loops and stopping the count-to-infinity problem. The router poisons the path to its neighbor.
     - This technique only solves problem with 2 nodes, not 3 or more nodes.
 - What is the Routing Information Protocol (RIP)?
-    - RIP uses hop count as metric (i.e., assumes link cost as 1). The metric of choosing a path can be 1) shortest distance, 2) lowest cost, 3) load-balanced path.
-    - Routing updates are exchanged between neighbors using a RIP response message, instead of distance vectors. The RIP messages are called RIP advertisements.
-    - Each router/node maintains a routing table. The table has three columns: 1) destination subnet, 2) next router, and 3) number of hops to destinations. The table has one row for each subnet in the AS.
-    - If a router does not hear from its neighbor at least once 180 seconds, that neighbor is considered broken. Routers send request and response messages using port number 520.
+    - RIP is a protocol based on the Distance Vector algorithm.
     - RIP is an application-level process.
+    - It's primary metric for measuring the cost of a path is **hop count**, meaning it defines the best path as the one that pass through fewer routers.
+    - It works as follows:
+        - Routers running RIP periodically send their routing tables to their direct neighbors in messages called RIP advertisements, containing the sender's current known distance to various desination subnets.
+        - When a router receive an advertisement from a neihbor, it compares the information with its own routing table. If the advertisement reveals a new path to a destination that is shorter (has fewer hops) than its current route, the router updates its table.
+        - If a router doesn't hear from a neighbor for 180 seconds, it assumes that neighbor is unreacable and updates its table to reflect the broken link.
 - What is Open Shortest Path First (OSPF) routing protocol?
-    - OSPF is a protocol to find the best path between the source and destination router. It is a link-state protocol that uses flooding of link-state information and a Dijkstra least-cost path algorithm. It is an advancement of RIP. Advances include authentication of messages exchanged between routers, the option to use multiple same-cost paths, and support for hierarchy within a single routing domain.
+    - OSPF is a protocol to find the best path between the source and destination router. 
+    - It is a link-state protocol that uses flooding of link-state information and a Dijkstra least-cost path algorithm. 
+    - It is an advancement of RIP. Advances include authentication of messages exchanged between routers, the option to use multiple same-cost paths, and support for hierarchy within a single routing domain.
     - Each router shares knowledge of its neighbors with every other router in the network.
 - How does hierarchy in OSPF work?
-    - An OSPF autonomous system can be configured hierarchically into areas. Each area runs its own link-state algorithm. Within each area, one or more area border routers are responsible for routing packets outside the area. One OSPF area is configured to be the backbone area, which routes traffic between other areas. For packets routing between two different areas, packets —> an area border router —> backbone —> area border router within the destination area —> destination
+    - Hierarchy in OSPF works by organizing a large autonomous system (AS) into smaller, more manageable **areas**. This structure simplifies routing and contains network traffic.
+    - Key components:
+        - Areas: a group of routers running its own independent link-state routing algorithm.
+        - Backbone Area: exactly one area within the system is designated as the backbone. It acts as a central hub, routing traffic between all the other routes.
+        - Area Border Routers: routers that connect an area to the backbone. The backbone area contains all the area border routers in the system.
+    - How traffic moves between areas: area border router in the source area --> backbone area --> area border router in the destination area --> final destination within that area
 - What is Link State Advertisements (LSA)?
-    - Every router within a domain that operates on OSPF uses LSAs. LSA communicates the router’s **local** routing topology to all other local routers in the same OSPF area. The refresh rate for LSA is defaulted to be 30 min.
+    - The main purpose of LSA is for a router to describe its immediate **local** surroundings, telling other routers which neigbhors it's connected to.
+    - Each router in the network collects these LSAs from all the other routers and use this information to build a complete map of the network's topology, which is stored in a **link state database**. 
+    - When a rounter's connection change, it sends out a new LSA to inform everyone of the update.
+    - LSAs are also sent periodically, by default 30 min, even if no changes.
 - How are the OSPF messages processed in the router?
-    - The router checks if LSA is new or duplicate by referring to the link-state database. If it’s new, it updates this database and schedules an shortest path first (SPF) calculation. This process repeats with every new LSAs.
-    - When all the LSAs have been processed, the LSAs are flooded out as an LS update packet to the next router. Then, we run SPF calculation, and update the Forwarding Information Base (FIB).
+    - The process begins when the route processor receives an LS update packet containing LSAs from a neigbhoring router.
+    - For each LSA received, the router checks its link-state database to see if it's new or duplicate. If it’s new, it updates this database and schedules an shortest path first (SPF) calculation, and determines which of its other neighbors it needs to forward this new information to. This process repeats with every new LSAs.
+    - When all the LSAs have been processed, the router bundles the new LSAs into its own LS update packet and **floods** it to its other neighbors. 
+    - Then, the router runs SPF calculation, and update the Forwarding Information Base (FIB).
 - What is Hot Potato Routing used for?
-    - Sometimes the destination of the traffic is outside the network, the traffic needs to travel through the network exits (egress points) before leaving the network. When there are equally good egress points (network exits), Hot Potato Routing is used to choose the closet egress point based on intradomain path cost.
+    - Sometimes the destination of the traffic is outside the network, the traffic needs to travel through the network exits (egress points) before leaving the network. When there are equally good egress points (network exits), Hot Potato Routing is used to choose **the closet egress point** based on intradomain path cost.
