@@ -18,19 +18,20 @@
         - Match source: Each leaf node in the destination trie hangs a separate source trie. We include *all* the corresponding source prefixes to build that trie. The packet’s source IP address is then searched within this particular source trie, and we select the longest prefix match.
         - The algo keeps track of the lowest-cost matching rule. Finally, the algo concludes with the least-cost rule.
 - What’s the main problem with the set pruning tries?
-    - The fact that we need to include all the corresponding source prefixes can cause memory explosion, because a source prefix can occur in multiple destination trie.
+    - The fact that we need to include all the corresponding source prefixes can cause **memory explosion**, because a source prefix can occur in multiple destination trie.
 - What is the difference between the pruning approach and the backtracking approach for packet classification with a trie?
     - Set pruning approach has a high cost in memory to reduce time, while backtracking approach pays in time to reduce memory.
     - Backtracking approach: each rule is only stored in the source trie corresponding to its *exact* destination prefix. We traverse the destination trie with the destination IP address, then work its way back up from the LPM node through all its ancestors, searching the associated source trie at each level to find the LPM for the source IP address.
 - What’s the benefit of a grid of tries approach?
     - Reduce the wasted time in the backtracking search by using precomputation. When there is a failure point in a source trie, we **precompute a switch pointer**, which takes us directly to the next possible source trie containing a matching rule.
 - Describe the “Take the Ticket” algorithm.
-    - Each output line maintains a distributed queue for all input lines that want to send packets to it. When an input line intends to send a packet to a specific output line, it requests a ticket. Then, the input line waits for the tickets to be served. When it’s served, the input line connects to the output line, the crosspoint is turned on, and the input line sends the packet.
+    - ![take_the_ticket](/images/lesson6_take_the_ticket.png)
+    - This is an algorithm for **scheduling**. Each output line maintains a distributed queue for all input lines that want to send packets to it. When an input line intends to send a packet to a specific output line, it requests a ticket. Then, the input line waits for the tickets to be served. When it’s served, the input line connects to the output line, the crosspoint is turned on, and the input line sends the packet.
 - What is the head-of-line problem?
-    - Head-of-line (HOL) blocking: when one input line sends it packet, the entire queue for other lines is waiting, even if they target different output lines.
+    - Head-of-line (HOL) blocking: when one input line sends it packet, the entire queue for other lines is waiting (see round 1 in the image above).
 - How is the head-of-line problem avoided using the knockout scheme?
     - The goal is to ensure all N incoming packets can reach the designated output in the same time slot. This requires the central switch fabric to run N times faster than the input lines. The Knockout scheme breaks all the incoming data into small, fixed-size units called cells.
-    - In practice, it’s rare for all N inputs to target the same outputs. So, the switch expects only a smaller number k to be sent to the same output simultaneously. Then the fabric running k times as fast as an inout link.
+    - In practice, it’s rare for all N inputs to target the same outputs. So, the switch expects only a smaller number k to be sent to the same output simultaneously. Then the fabric running k times as fast as an input link.
     - The knockout scheme acts as a rapid selector or concentrator to handle the competition for an output port.
 - How is the head-of-line problem avoided using parallel iterative matching?
     - Request phase: all inputs send requests *in parallel* to all outputs they want to connect with.
@@ -38,7 +39,7 @@
     - Accept phase: inputs that receive multiple grants *randomly* pick an output to send to.
     - In the subsequent rounds, the algorithm repeats by having each input send to n-1 outputs.
 - Describe FIFO with tail drop.
-    - Packets enter a router on input links. They are then looked up using the address lookup component which gives the router the output link number The switching system within the router then places the packet in the corresponding output port. First-in, first-out. If the output link buffer is completely full, incoming packets to the tail of the queue are dropped. Fast scheduling decision, but potential loss
+    - This is the simplest method for router scheduling. Packets enter a router on input links. They are then looked up using the address lookup component which gives the router the output link number The switching system within the router then places the packet in the corresponding output port. First-in, first-out. If the output link buffer is completely full, incoming packets to the tail of the queue are dropped. Fast scheduling decision, but potential loss
 - What are the reasons for making scheduling decisions more complex than FIFO?
     - Router support for congestion
     - Providing Quality of Service (QoS) guarantees to flows
