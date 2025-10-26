@@ -1,3 +1,4 @@
+ # Lesson 2: Transport and Applications Layers
 - What does the transport layer provide?
     - The transport layer provides an **end-to-end connection** between two applications running on different hosts. The transport layer on the sending host receives a message from the application layer and appends its own header, called a segment. This segment is then sent to the network layer which will append (encapsulate) this segment with its header information.
 - What is a packet for the transport layer called?
@@ -57,7 +58,7 @@
     - ![Fast retransmit](images/lesson2_fast_retrainsmit.png)
     - Fast retransmit is a mechanism to detect and recover from a lost segment **without having to wait for a timeout**. By this, the sender can quickly retransmit the missing data. It works as follows:
         - A duplicate ACK is an acknowledgement from the receiver for a segment that the sender has already received an ACK for.
-        - When the sender receives three duplicate ACKs for a particular segment, it considers that segment to be lost and immediately retransmits it.
+        - When the sender receives three duplicate ACKs for a particular segment, it considers that segment to be lost and immediately retransmits it. **As a result, the congestion window will reduce by half**
         - *Notes*: In fast retransmit, `ACK` tells the sender what it want *next*. An `ACK` for number N means receiving packets up to N-1 and now expecting to see packet N
 - What is transmission control, and why do we need to control it?
     - Transmission control is the function of managing the speed and volume of data flow from a sending host to a receiving host.
