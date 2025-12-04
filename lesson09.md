@@ -73,7 +73,7 @@
     - Later when initiating an attack, the attacker instructs these flooding servers to send a high volumne of traffic to the victim.
 
 - What is spoofing, and how is related to a DDoS attack?
-    - Setting a false IP address in the source field of a packet to impersonate a legitimate server. 
+    - The attacker sets a false IP address in the source field of a packet to impersonate a legitimate server. 
     - In one form, the source IP address is spoofed, so the response of the server is sent to some other client instead of the attacker's machine
     - In the other form, the attacker sets the same IP address in both the source and the destination ID fields, resulting in the server sending the replies to itself, causing it to crash.
 
