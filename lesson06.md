@@ -25,7 +25,7 @@
 - What’s the benefit of a grid of tries approach?
     - Reduce the wasted time in the backtracking search by using precomputation. When there is a failure point in a source trie, we **precompute a switch pointer**, which takes us directly to the next possible source trie containing a matching rule.
 - Describe the “Take the Ticket” algorithm.
-    - ![take_the_ticket](/images/lesson6_take_the_ticket.png)
+    - ![take_the_ticket](/images/lesson6_take_ticket.png)
     - This is an algorithm for **scheduling**. Each output line maintains a distributed queue for all input lines that want to send packets to it. When an input line intends to send a packet to a specific output line, it requests a ticket. Then, the input line waits for the tickets to be served. When it’s served, the input line connects to the output line, the crosspoint is turned on, and the input line sends the packet.
 - What is the head-of-line problem?
     - Head-of-line (HOL) blocking: when one input line sends it packet, the entire queue for other lines is waiting (see round 1 in the image above).
